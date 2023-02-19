@@ -47,6 +47,9 @@ async def predict(
     image = read_file_as_image(await file.read())
     img_batch = np.expand_dims(image, 0)
     
+    predictions = POTATO_MODEL.predict(img_batch)
+    predicted_class = POTATO_CLASS_NAMES[np.argmax(predictions[0])]
+    
     if(plant == "potato"):
         predictions = POTATO_MODEL.predict(img_batch)
         predicted_class = POTATO_CLASS_NAMES[np.argmax(predictions[0])]
