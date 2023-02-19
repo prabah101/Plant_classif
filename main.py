@@ -21,16 +21,19 @@ app.add_middleware(
 )
 
 POTATO_MODEL = tf.keras.models.load_model("./saved_models/2")
-CLASS_NAMES = ["Early Blight", "Late Blight", "Healthy"]
+POTATO_CLASS_NAMES = ["Early Blight", "Late Blight", "Healthy"]
+
+BELL_PEPPER_MODEL = tf.keras.models.load_model("./saved_models/3")
+BELL_PEPPER_CLASS_NAMES = ["Bacterial Spot", "Healthy"]
 
 class AvailablePlants(str, Enum):
     tomato = "tomato"
     potato = "potato"
     bell_pepper = "bell_pepper"
 
-@app.get("/hello")
+@app.get("/")
 async def hello():
-    return "This is a Plant Disease classification API"
+    return "This is a Plant Disease classification API. Visit '/docs' for more info."
 
 def read_file_as_image(data) -> np.ndarray:
     image = np.array(Image.open(BytesIO(data)))
@@ -43,10 +46,14 @@ async def predict(
 ):
     image = read_file_as_image(await file.read())
     img_batch = np.expand_dims(image, 0)
+    
+    if(plant == "potato"):
+        predictions = POTATO_MODEL.predict(img_batch)
+        predicted_class = POTATO_CLASS_NAMES[np.argmax(predictions[0])]
+    elif(plant == "bell_pepper"):
+        predictions = BELL_PEPPER_MODEL.predict(img_batch)
+        predicted_class = BELL_PEPPER_CLASS_NAMES[np.argmax(predictions[0])]
 
-    predictions = POTATO_MODEL.predict(img_batch)
-
-    predicted_class = CLASS_NAMES[np.argmax(predictions[0])]
     confidence = round(100 * (np.max(predictions[0])), 2)
 
 
